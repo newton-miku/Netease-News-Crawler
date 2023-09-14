@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>新闻列表</title>
+    <!-- 引入jQuery库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <h1>新闻列表</h1>
+
+    <!-- 为每列添加排序按钮 -->
+    <table id="newsTable">
+        <thead>
+            <tr>
+                <th><button onclick="sortTable('newsTable', 0)">按标题排序</button></th>
+                <th><button onclick="sortTable('newsTable', 1)">按链接排序</button></th>
+                <th><button onclick="sortTable('newsTable', 2)">按时间排序</button></th>
+                <th><button onclick="sortTable('newsTable', 3)">按作者排序</button></th>
+                <th><button onclick="sortTable('newsTable', 4)">按媒体类别排序</button></th>
+                <th><button onclick="sortTable('newsTable', 5)">按分类排序</button></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for news_item in news_data %}
+            <tr>
+                <td>{{ news_item.title }}</td>
+                <td><a href="{{ news_item.link }}" target="_blank">查看详情</a></td>
+                <td>{{ news_item.date_and_time }}</td> <!-- 将日期和时间整合为一个部分 -->
+                <td>{{ news_item.author }}</td>
+                <td>{{ news_item.type }}</td>
+                <td>{{ news_item.tag }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 添加JavaScript函数来实现排序 -->
+    <script>
+        function sortTable(tableId, columnIndex) {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById(tableId);
+            switching = true;
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("td")[columnIndex];
+                    y = rows[i + 1].getElementsByTagName("td")[columnIndex];
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

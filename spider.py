@@ -1,3 +1,10 @@
+# -*- coding:utf-8 -*-
+'''
+@Author: nEwt0n_m1ku
+@contact: cto@ddxnb.cn
+@Time: 2023/09/01 0011 15:13
+@version: 1.0
+'''
 import os
 from time import sleep
 import requests
@@ -16,7 +23,11 @@ def scrape_news():
     urls = ['https://news.163.com/domestic/', 'https://news.163.com/world/', 'https://gov.163.com/',
             'https://tech.163.com/']
     news_data = []
+    news_links = set()  # 用于存储已经爬取过的新闻链接
     news_count = int(0)
+    same_news_count = int(0)
+    no_title_count = int(0)
+    total_count = int(0)
     for url in urls:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -31,6 +42,24 @@ def scrape_news():
             for link in soup.find_all('a', href=True):
                 href = link.get('href')
                 title = link.get_text(strip=True)
+                if not (href.startswith(prefix[0])
+                        or href.startswith(prefix[1])
+                        or href.startswith(prefix[2])):
+                    continue
+                total_count+=1
+
+                if title is None or title == "":
+                    no_title_count+=1
+                    continue
+
+                # 检查链接是否已经存在于已爬取链接集合中，如果是，则跳过
+                if href in news_links:
+                    same_news_count+=1
+                    continue
+
+                # 将链接添加到已爬取链接集合中
+                news_links.add(href)
+
                 a_news = {'title': title, 'rtitle': None, 'link': href, 'date': None, 'time': None, 'author': None,
                           'type': None,
                           'tag': None, 'content': None}
@@ -55,7 +84,7 @@ def scrape_news():
                 news_data.append(a_news)
                 news_count += 1
                 print("\r", end='')
-                print(f"已采集新闻数量：{news_count}", flush=True, end="")
+                print(f"已采集新闻数量：{news_count},重复的新闻数量：{same_news_count},无外标题数量：{no_title_count},总链接采集数：{total_count}", flush=True, end="")
                 # sleep(0.5)
         else:
             print(response.status_code, response.text)
@@ -129,8 +158,8 @@ def scrape_news_details(news_data):
             err_count += 1
         news_count += 1
         print("\r", end='')
-        print(f"已处理新闻数量：{news_count},成功{ok_count}，失败{err_count}", flush=True, end="")
-        sleep(0.1)
+        print(f"已处理新闻数量：{news_count},成功{ok_count},失败{err_count},外标题:{news['title']}", flush=True, end="")
+        sleep(0.05)
 
 
 def save_to_excel(news_data, filename):
